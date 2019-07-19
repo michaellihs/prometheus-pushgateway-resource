@@ -145,7 +145,7 @@ Developer's Guide
 This section provides some information for those who want to join development on this resource.
 
 
-### Pusing a new resource Image to Docker Hub
+### Pushing a new resource Image to Docker Hub
 
 In case you want to build and push a new Docker image for the resource via our [Circle CI job](https://circleci.com/gh/michaellihs/prometheus-pushgateway-resource), to the following:
 
