@@ -40,7 +40,7 @@ resource_types:
     type: docker-image
     source:
       repository: michaellihs/prometheus-pushgateway-resource
-      tag: dev-4
+      tag: 1.0.0
 
 resources:
   - name: pushgateway

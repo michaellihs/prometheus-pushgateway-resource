@@ -11,6 +11,8 @@ exec 3>&1 # make stdout available as fd 3 for the result
 exec 1>&2 # redirect all output to stderr for logging
 
 payload=$(mktemp /tmp/resource-in.XXXXXX)
+
+# script gets payload piped in on stdin (see test/complex_metric.out for example)
 cat > "${payload}" <&0
 
 # if debug is set to true, we don't curl but only output body (for testing)
