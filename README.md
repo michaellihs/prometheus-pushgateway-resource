@@ -15,7 +15,7 @@ A Concourse Resource for sending metrics to the [Prometheus Push Gateway](https:
 - [Developer's Guide](#developers-guide)
     - [Pusing a new resource Image to Docker Hub](#pusing-a-new-resource-image-to-docker-hub)
     - [Spinning up a local Development Environment with `docker-compose`](#spinning-up-a-local-development-environment-with-docker-compose)
-        - [Generating Keys for Concourse](#generating-keys-for-concourse)
+    - [Generating Keys for Concourse](#generating-keys-for-concourse)
     - [Running the Tests](#running-the-tests)
     - [Building and pushing the Docker Image for the Resource](#building-and-pushing-the-docker-image-for-the-resource)
     - [Setting up the CI Pipeline for the Resource](#setting-up-the-ci-pipeline-for-the-resource)
@@ -38,19 +38,19 @@ resource_types:
     type: docker-image
     source:
       repository: michaellihs/prometheus-pushgateway-resource
-      tag: 1.0.0
+      tag: dev-4
 
 resources:
   - name: pushgateway
     type: pushgateway
     source:
       url: http://pushgw:9091
-      job: concourse-pushgw-demo
+      job: concourse-pushgw-development
 
 jobs:
   - name: pushgw-metric
     plan:
-      - task: a-successful-task
+      - task: task1
         config:
           platform: linux
           image_resource:
@@ -63,7 +63,30 @@ jobs:
         on_success:
           put: pushgateway
           params:
-            metric: successful_metric 1
+            metric: successful_metric{label="label-content"}
+            job: task1
+            value: 1
+      - task: task2
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: {repository: busybox}
+          run:
+            path: echo
+            args:
+              - hello world
+        on_success:
+          put: pushgateway
+          params:
+            metric: successful_metric
+            job: task2
+            value: 1
+            labels:
+              label_1: value_1
+              label_2: value_2
+
+
 ```
 
 
@@ -83,7 +106,9 @@ jobs:
 | Parameter | Type   | Required | Default | Description                                                                                       |
 |:----------|:-------|:---------|:--------|:--------------------------------------------------------------------------------------------------|
 | `metric`  | String | yes      |         | The metric to send to the Pushgateway                                                             |
+| `value`   | Float  | yes      |         | Value for the metric                                                                                |
 | `job`     | String | no       |         | Job name of the metrics ( `metric{job="THIS VALUE",...}`) - overrides value in `resource` section |
+| `labels`  | Map    | no       |         | Labels and values to be added as `metric{key="value"...}`                                         |
 
 
 Developer's Guide
@@ -134,7 +159,7 @@ Whenever CircleCI builds a commit that has a semantic version tag on it, it will
 > **Warning**: For convenience, this repository comes with a set of default keys used by Concourse. Make sure to re-create those keys if you want to run Concourse in a more production setup.
 
 
-#### Generating Keys for Concourse
+### Generating Keys for Concourse
 
 Follow steps in https://concourse-ci.org/concourse-generate-key.html - this is just a reminder of what I did to generate the keys:
 
