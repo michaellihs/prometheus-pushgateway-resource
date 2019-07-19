@@ -1,6 +1,8 @@
 Concourse Resource for the Prometheus Push Gateway
 ==================================================
 
+[![CircleCI](https://circleci.com/gh/michaellihs/prometheus-pushgateway-resource/tree/master.svg?style=svg)](https://circleci.com/gh/michaellihs/prometheus-pushgateway-resource/tree/master)
+
 A Concourse Resource for sending metrics to the [Prometheus Push Gateway](https://github.com/prometheus/pushgateway).
 
 
