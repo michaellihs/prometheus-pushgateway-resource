@@ -69,7 +69,6 @@ test 'complex_metric' | jq -e "
     .job == $(echo 'metric_with_kv' | jq -R .)"
 
 expected_body='metric_with_env_vars{BUILD_ID=\"'$BUILD_ID'\", BUILD_PIPELINE_NAME=\"'$BUILD_PIPELINE_NAME'\", BUILD_JOB_NAME=\"'$BUILD_JOB_NAME'\", BUILD_NAME=\"'$BUILD_NAME'\", BUILD_TEAM_NAME=\"'$BUILD_TEAM_NAME'\", ATC_EXTERNAL_URL=\"'$ATC_EXTERNAL_URL'\"} 0'
-echo $expected_body
 test 'metric_with_env_vars' | jq -e "
     .pushgw_url == $(echo 'http://pushgw:9091' | jq -R .) and
     .body == \"${expected_body}\" and
