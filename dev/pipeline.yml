@@ -1,0 +1,33 @@
+---
+resource_types:
+  - name: pushgateway
+    type: docker-image
+    source:
+      repository: michaellihs/prometheus-pushgateway-resource
+      tag: dev-1
+
+resources:
+  - name: pushgateway
+    type: pushgateway
+    source:
+      url: http://pushgw:9091
+      job: concourse-pushgw-development
+
+jobs:
+  - name: pushgw-metric
+    plan:
+      - task: a-successful-task
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: {repository: busybox}
+          run:
+            path: echo
+            args:
+              - hello world
+        on_success:
+          put: pushgateway
+          params:
+            metric: successful_metric 1
+

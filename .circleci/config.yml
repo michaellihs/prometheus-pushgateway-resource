@@ -1,0 +1,30 @@
+version: 2
+jobs:
+  build:
+    working_directory: /docker-image
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build --no-cache -t prometheus-pushgateway-resource .
+      - deploy:
+          name: Push resource Docker image
+          # apk commands are ugly, we only use them to get bash for the regex...
+          command: |
+            apk update
+            apk upgrade
+            apk add bash
+            bash -c 'version=$(git describe --tags); if [[ $version =~ ^[[:digit:]]+\.[[:digit:]]+\.[[:digit:]]+$ ]] ; then docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}; ./build.sh ${version} ${DOCKER_REPO}; fi'
+
+# workflow is necessary to have the job being triggered when we push a tag
+workflows:
+  version: 2
+  build:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/

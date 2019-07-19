@@ -1,0 +1,22 @@
+---
+resources:
+  - name: resource-git
+    type: git
+    source:
+      uri: https://github.com/michaellihs/prometheus-pushgateway-resource.git
+      branch: master
+  - name: resource-image
+    type: docker-image
+    source:
+      repository: ((docker_repo))/prometheus-pushgateway-resource
+      username: ((docker_user))
+      password: ((docker_password))
+
+jobs:
+  - name: build-prometheus-pushgateway-resource
+    plan:
+      - get: resource-git
+        trigger: true
+      - put: resource-image
+        params:
+          build: resource-git

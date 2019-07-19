@@ -1,0 +1,10 @@
+{
+  "source": {
+    "url": "http://pushgw:9091",
+    "job": "simple_metric",
+    "debug": "true"
+  },
+  "params": {
+    "metric": "simple_metric 0"
+  }
+}

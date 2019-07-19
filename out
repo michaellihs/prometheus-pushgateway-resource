@@ -1,0 +1,47 @@
+#!/bin/bash
+
+set -e
+set +x
+
+# for jq
+PATH=/usr/local/bin:$PATH
+
+cd "${1}"
+
+exec 3>&1 # make stdout available as fd 3 for the result
+exec 1>&2 # redirect all output to stderr for logging
+
+payload=$(mktemp /tmp/resource-in.XXXXXX)
+cat > "${payload}" <&0
+
+debug="$(jq -r '.source.debug // "false"' < "${payload}")"
+
+pushgw_url="$(jq -r '.source.url' < "${payload}")"
+job_from_source="$(jq -r '.source.job' < "${payload}")"
+job_from_params="$(jq -r '.params.job' < "${payload}")"
+job=""
+if [[ $job_from_params == 'null' ]]; then job=$job_from_source; else job=$job_from_params; fi
+metric="$(jq -r '.params.metric' < "${payload}")"
+
+body="${metric}"
+
+debug_info=""
+
+# check whether we really want to send messages or just running tests (debug)
+if [[ "${debug}" == "true" ]]; then
+    debug_info="$(cat <<EOF
+{
+    "pushgw_url": "${pushgw_url}",
+    "body": "${body}",
+    "job": "${job}"
+}
+EOF
+    )"
+else
+    echo "${metric}" | curl --data-binary @- "${pushgw_url}/metrics/job/${job}"
+fi
+
+timestamp="$(jq -n "{version:{timestamp:\"$(date +%s)\"}}")"
+
+# send actual result to &3 since this is redirected to &1
+echo "$timestamp $debug_info " | jq -s add  >&3
