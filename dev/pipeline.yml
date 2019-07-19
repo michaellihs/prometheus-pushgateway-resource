@@ -30,4 +30,7 @@ jobs:
           put: pushgateway
           params:
             metric: successful_metric 1
+            labels:
+              label_1: value_1
+              label_2: value_2
 

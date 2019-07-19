@@ -55,3 +55,9 @@ test 'jobname_override' | jq -e "
     .pushgw_url == $(echo 'http://pushgw:9091' | jq -R .) and
     .body == $(echo 'simple_metric 0' | jq -R .) and
     .job == $(echo 'override' | jq -R .)"
+
+expected_body='metric_with_kv{key-1=\"value-2\"} 0'
+test 'metric_with_kv' | jq -e "
+    .pushgw_url == $(echo 'http://pushgw:9091' | jq -R .) and
+    .body == \"${expected_body}\" and
+    .job == $(echo 'metric_with_kv' | jq -R .)"
