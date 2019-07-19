@@ -61,3 +61,9 @@ test 'metric_with_kv' | jq -e "
     .pushgw_url == $(echo 'http://pushgw:9091' | jq -R .) and
     .body == \"${expected_body}\" and
     .job == $(echo 'metric_with_kv' | jq -R .)"
+
+expected_body='complex_metric{label_1=\"value-1\", label_2=\"value-2\"} 1'
+test 'complex_metric' | jq -e "
+    .pushgw_url == $(echo 'http://pushgw:9091' | jq -R .) and
+    .body == \"${expected_body}\" and
+    .job == $(echo 'metric_with_kv' | jq -R .)"

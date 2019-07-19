@@ -13,6 +13,7 @@ exec 1>&2 # redirect all output to stderr for logging
 payload=$(mktemp /tmp/resource-in.XXXXXX)
 cat > "${payload}" <&0
 
+# if debug is set to true, we don't curl but only output body (for testing)
 debug="$(jq -r '.source.debug // "false"' < "${payload}")"
 
 pushgw_url="$(jq -r '.source.url' < "${payload}")"
@@ -20,9 +21,17 @@ job_from_source="$(jq -r '.source.job' < "${payload}")"
 job_from_params="$(jq -r '.params.job' < "${payload}")"
 metric="$(jq -r '.params.metric' < "${payload}")"
 value="$(jq -r '.params.value' < "${payload}")"
+labels="$(jq -r '.params.labels' < "${payload}")"
 
+# if we have a job in the parameters, override job in source
 job=""
 if [[ $job_from_params == 'null' ]]; then job=$job_from_source; else job=$job_from_params; fi
+
+# if we have a set of lables, flatten them into comma-separated string
+if [[ ${labels} != 'null' ]]; then
+    joined_labels=$(jq '.params.labels' < "${payload}" | jq -r 'keys[] as $k | "\($k)=\"\(.[$k])\""' | tr '\n' ' ' | sed -e 's/ /, /g' | sed -e 's/, $//g')
+    metric="${metric}{${joined_labels}}"
+fi
 
 body="${metric} ${value}"
 
@@ -33,13 +42,13 @@ if [[ "${debug}" == "true" ]]; then
     debug_info="$(cat <<EOF
 {
     "pushgw_url": "${pushgw_url}",
-    "body": "${body//\"/\"}",
+    "body": "${body//\"/\\\"}",
     "job": "${job}"
 }
 EOF
     )"
 else
-    echo "${metric}" | curl --data-binary @- "${pushgw_url}/metrics/job/${job}"
+    echo "${body}" | curl --data-binary @- "${pushgw_url}/metrics/job/${job}"
 fi
 
 timestamp="$(jq -n "{version:{timestamp:\"$(date +%s)\"}}")"

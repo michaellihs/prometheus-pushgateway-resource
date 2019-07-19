@@ -1,0 +1,15 @@
+{
+  "source": {
+    "url": "http://pushgw:9091",
+    "job": "metric_with_kv",
+    "debug": "true"
+  },
+  "params": {
+    "metric": "complex_metric",
+    "value": 1,
+    "labels": {
+      "label_1": "value-1",
+      "label_2": "value-2"
+    }
+  }
+}
