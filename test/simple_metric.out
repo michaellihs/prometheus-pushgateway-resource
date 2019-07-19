@@ -5,6 +5,7 @@
     "debug": "true"
   },
   "params": {
-    "metric": "simple_metric 0"
+    "metric": "simple_metric",
+    "value": 0
   }
 }

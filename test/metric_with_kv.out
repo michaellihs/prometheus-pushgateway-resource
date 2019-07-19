@@ -5,6 +5,7 @@
     "debug": "true"
   },
   "params": {
-    "metric": "metric_with_kv{key-1=\"value-2\"} 0"
+    "metric": "metric_with_kv{key-1=\"value-2\"}",
+    "value": 0
   }
 }
