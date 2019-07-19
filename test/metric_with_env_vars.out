@@ -1,0 +1,11 @@
+{
+  "source": {
+    "url": "http://pushgw:9091",
+    "job": "metric_with_env_vars",
+    "debug": "true"
+  },
+  "params": {
+    "metric": "metric_with_env_vars{BUILD_ID=\"$BUILD_ID\", BUILD_PIPELINE_NAME=\"$BUILD_PIPELINE_NAME\", BUILD_JOB_NAME=\"$BUILD_JOB_NAME\", BUILD_NAME=\"$BUILD_NAME\", BUILD_TEAM_NAME=\"$BUILD_TEAM_NAME\", ATC_EXTERNAL_URL=\"$ATC_EXTERNAL_URL\"}",
+    "value": 0
+  }
+}

@@ -85,8 +85,25 @@ jobs:
             labels:
               label_1: value_1
               label_2: value_2
-
-
+      - task: task3
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: {repository: busybox}
+          run:
+            path: echo
+            args:
+              - hello world
+        on_success:
+          put: pushgateway
+          params:
+            metric: successful_metric
+            job: task2
+            value: 1
+            labels:
+              BUILD_ID: $BUILD_ID
+              BUILD_NAME: $BUILD_NAME
 ```
 
 
@@ -109,6 +126,15 @@ jobs:
 | `value`   | Float  | yes      |         | Value for the metric                                                                                |
 | `job`     | String | no       |         | Job name of the metrics ( `metric{job="THIS VALUE",...}`) - overrides value in `resource` section |
 | `labels`  | Map    | no       |         | Labels and values to be added as `metric{key="value"...}`                                         |
+
+The following environment variables can be used in the `metric` and `labels` properties:
+
+* `$BUILD_ID`
+* `$BUILD_PIPELINE_NAME`
+* `$BUILD_JOB_NAME`
+* `$BUILD_NAME`
+* `$BUILD_TEAM_NAME`
+* `$ATC_EXTERNAL_URL`
 
 
 Developer's Guide
@@ -229,7 +255,7 @@ export DOCKER_PASSWORD='your_password_on_dockerhub'
 TODOs
 -----
 
-- [ ] add tests with using env vars (`$BUILD_ID`...)
+- [x] add tests with using env vars (`$BUILD_ID`...)
 
 
 Resources

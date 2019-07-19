@@ -34,6 +34,7 @@ if [[ ${labels} != 'null' ]]; then
 fi
 
 body="${metric} ${value}"
+body=$(echo ${body} | envsubst)
 
 debug_info=""
 
