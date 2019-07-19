@@ -15,7 +15,7 @@ A Concourse Resource for sending metrics to the [Prometheus Push Gateway](https:
         - [The `resources.type:pushgateway.source` Section](#the-resourcestypepushgatewaysource-section)
         - [The `jobs.plan.task.on_success|on_failure.params` section](#the-jobsplantaskon_successon_failureparams-section)
 - [Developer's Guide](#developers-guide)
-    - [Pusing a new resource Image to Docker Hub](#pusing-a-new-resource-image-to-docker-hub)
+    - [Pushing a new resource Image to Docker Hub](#pushing-a-new-resource-image-to-docker-hub)
     - [Spinning up a local Development Environment with `docker-compose`](#spinning-up-a-local-development-environment-with-docker-compose)
     - [Generating Keys for Concourse](#generating-keys-for-concourse)
     - [Running the Tests](#running-the-tests)
