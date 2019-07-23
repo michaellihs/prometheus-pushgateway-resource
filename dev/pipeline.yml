@@ -4,7 +4,7 @@ resource_types:
     type: docker-image
     source:
       repository: michaellihs/prometheus-pushgateway-resource
-      tag: dev-5
+      tag: dev-6
 
 resources:
   - name: pushgateway
@@ -31,7 +31,7 @@ jobs:
           params:
             metric: successful_metric{label="label-content"}
             job: task1
-            value: 1
+            value: 13
       - task: task2
         config:
           platform: linux
@@ -67,7 +67,7 @@ jobs:
           params:
             metric: successful_metric
             job: task2
-            value: 1
+            value: 14
             labels:
               BUILD_ID: $BUILD_ID
               BUILD_NAME: $BUILD_NAME

@@ -51,6 +51,7 @@ if [[ "${debug}" == "true" ]]; then
 EOF
     )"
 else
+    echo "Metric sent to Pushgateway: '${body}'" >&2
     echo "${body}" | curl --data-binary @- "${pushgw_url}/metrics/job/${job}"
 fi
 
