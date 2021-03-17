@@ -48,6 +48,9 @@ resources:
     source:
       url: http://pushgw:9091
       job: concourse-pushgw-development
+      basicauth:
+        username: admin
+        password: changeme
 
 jobs:
   - name: pushgw-metric
@@ -118,7 +121,8 @@ jobs:
 | `url`     | URL    | yes      |         | URL of the Pushgateway server to send metrics to                                                   |
 | `debug`   | String | no       | `false` | If set to `true`, the resource will output only debug information                                  |
 | `job`     | String | no       |         | Job name of the metrics ( `metric{job="THIS VALUE",...}`), overridden by value in `params` section |
-
+| `basicauth.username`     | String | no       |         | Username for basic authentication |
+| `basicauth.password`     | String | no       |         | Password for basic authentication |
 
 #### The `jobs.plan.task.on_success|on_failure.params` section
 
