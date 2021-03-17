@@ -19,6 +19,8 @@ cat > "${payload}" <&0
 debug="$(jq -r '.source.debug // "false"' < "${payload}")"
 
 pushgw_url="$(jq -r '.source.url' < "${payload}")"
+basicauth_username="$(jq -r '.source.basicauth.username' < "${payload}")"
+basicauth_password="$(jq -r '.source.basicauth.password' < "${payload}")"
 job_from_source="$(jq -r '.source.job' < "${payload}")"
 job_from_params="$(jq -r '.params.job' < "${payload}")"
 metric="$(jq -r '.params.metric' < "${payload}")"
@@ -37,22 +39,35 @@ fi
 
 body="${metric} ${value}"
 body=$(echo ${body} | envsubst)
+body_escaped=${body//\"/\\\"}
 
 debug_info=""
+
+basicauth() {
+    if [ -n "$basicauth_username" ]; then
+        echo -n "--user '${basicauth_username}:${basicauth_password}'"
+    fi
+}
+basicauth_enabled() {
+    if [ -n "$basicauth_username" ]; then
+        echo -n '"basicauth": "enabled",'
+    fi
+}
 
 # check whether we really want to send messages or just running tests (debug)
 if [[ "${debug}" == "true" ]]; then
     debug_info="$(cat <<EOF
 {
     "pushgw_url": "${pushgw_url}",
-    "body": "${body//\"/\\\"}",
+    $(basicauth_enabled)
+    "body": "${body_escaped}",
     "job": "${job}"
 }
 EOF
     )"
 else
     echo "Metric sent to Pushgateway: '${body}'" >&2
-    echo "${body}" | curl --data-binary @- "${pushgw_url}/metrics/job/${job}"
+    echo "${body}" | curl $(basicauth) --data-binary @- "${pushgw_url}/metrics/job/${job}"
 fi
 
 timestamp="$(jq -n "{version:{timestamp:\"$(date +%s)\"}}")"
