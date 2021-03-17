@@ -21,6 +21,7 @@ debug="$(jq -r '.source.debug // "false"' < "${payload}")"
 pushgw_url="$(jq -r '.source.url' < "${payload}")"
 basicauth_username="$(jq -r '.source.basicauth.username // empty' < "${payload}")"
 basicauth_password="$(jq -r '.source.basicauth.password // empty' < "${payload}")"
+skip_ssl_validation="$(jq -r '.source.skip_ssl_validation' < "${payload}")"
 job_from_source="$(jq -r '.source.job' < "${payload}")"
 job_from_params="$(jq -r '.params.job' < "${payload}")"
 metric="$(jq -r '.params.metric' < "${payload}")"
@@ -43,6 +44,13 @@ body_escaped=${body//\"/\\\"}
 
 debug_info=""
 
+insecure() {
+    [ "${skip_ssl_validation:-false}" == "true" ] && echo -n "--insecure"
+}
+insecure_enabled() {
+    [ "${skip_ssl_validation:-false}" == "true" ] && echo -n '"skip_ssl_validation": "true",'
+}
+
 basicauth() {
     if [ -n "$basicauth_username" ]; then
         echo -n "--user '${basicauth_username}:${basicauth_password}'"
@@ -60,6 +68,7 @@ if [[ "${debug}" == "true" ]]; then
 {
     "pushgw_url": "${pushgw_url}",
     $(basicauth_enabled)
+    $(insecure_enabled)
     "body": "${body_escaped}",
     "job": "${job}"
 }
@@ -67,7 +76,7 @@ EOF
     )"
 else
     echo "Metric sent to Pushgateway: '${body}'" >&2
-    echo "${body}" | curl $(basicauth) --data-binary @- "${pushgw_url}/metrics/job/${job}"
+    echo "${body}" | curl $(insecure) $(basicauth) --data-binary @- "${pushgw_url}/metrics/job/${job}"
 fi
 
 timestamp="$(jq -n "{version:{timestamp:\"$(date +%s)\"}}")"
