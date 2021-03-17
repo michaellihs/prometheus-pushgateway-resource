@@ -19,8 +19,8 @@ cat > "${payload}" <&0
 debug="$(jq -r '.source.debug // "false"' < "${payload}")"
 
 pushgw_url="$(jq -r '.source.url' < "${payload}")"
-basicauth_username="$(jq -r '.source.basicauth.username' < "${payload}")"
-basicauth_password="$(jq -r '.source.basicauth.password' < "${payload}")"
+basicauth_username="$(jq -r '.source.basicauth.username // empty' < "${payload}")"
+basicauth_password="$(jq -r '.source.basicauth.password // empty' < "${payload}")"
 job_from_source="$(jq -r '.source.job' < "${payload}")"
 job_from_params="$(jq -r '.params.job' < "${payload}")"
 metric="$(jq -r '.params.metric' < "${payload}")"
