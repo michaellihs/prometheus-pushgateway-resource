@@ -9,7 +9,7 @@ set -e
 #/
 #/ Examples:
 #/
-#/ ./build.sh VERSION REPOSITORY
+#/ ./build.sh VERSION REPOSITORY [--latest]
 #/
 #/ Options:
 #/   --help: Display this help message
@@ -20,9 +20,16 @@ if [[ -z $1 || -z $2 ]]; then usage ; fi
 
 version=$1
 repo=$2
+latest=$3
 
 image_name='prometheus-pushgateway-resource'
 
+echo "Building Image"
 docker build --no-cache -t ${image_name} .
 docker tag ${image_name} ${repo}/${image_name}:${version}
 docker push ${repo}/${image_name}:${version}
+if [ "${latest:-}" == "--latest" ]; then
+  echo "Tagging as latest"
+  docker tag ${image_name} ${repo}/${image_name}:latest
+  docker push ${repo}/${image_name}:latest
+fi
