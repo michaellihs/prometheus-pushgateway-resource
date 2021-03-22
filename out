@@ -31,6 +31,7 @@ labels="$(jq -r '.params.labels' < "${payload}")"
 # if we have a job in the parameters, override job in source
 job=""
 if [[ $job_from_params == 'null' ]]; then job=$job_from_source; else job=$job_from_params; fi
+job=$(echo ${job} | envsubst)
 
 # if we have a set of lables, flatten them into comma-separated string
 if [[ ${labels} != 'null' ]]; then
