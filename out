@@ -74,6 +74,7 @@ if [[ "${debug}" == "true" ]]; then
 }
 EOF
     )"
+    echo "$debug_info"
 else
     echo "Metric sent to Pushgateway: '${body}'" >&2
     echo "${body}" | curl $(insecure) $(basicauth) --data-binary @- "${pushgw_url}/metrics/job/${job}"
