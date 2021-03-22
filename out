@@ -53,7 +53,7 @@ insecure_enabled() {
 
 basicauth() {
     if [ -n "$basicauth_username" ]; then
-        echo -n "--user '${basicauth_username}:${basicauth_password}'"
+        echo -n "--user ${basicauth_username}:${basicauth_password}"
     fi
 }
 basicauth_enabled() {
@@ -76,9 +76,16 @@ EOF
     )"
     echo "$debug_info"
 else
-    echo "Metric sent to Pushgateway: '${body}'" >&2
-    echo "${body}" | curl $(insecure) $(basicauth) --data-binary @- "${pushgw_url}/metrics/job/${job}"
+    echo "Sending metric: '${body}'" >&2
+    echo "To Pushgateway: ${pushgw_url}/metrics/job/${job}" >&2
+    echo "With arguments: $(insecure) $(basicauth | sed -e 's#:.*#:redacted#')" >&2
+    echo "${body}" | curl $(insecure) $(basicauth) --fail --data-binary @- "${pushgw_url}/metrics/job/${job}" 2>&1
     return_code=$?
+    if [ $return_code -eq 0 ]; then
+        echo "Success: metric pushed"
+    else
+        echo "Error: could not push to pushgateway ($return_code)"
+    fi
 fi
 
 timestamp="$(jq -n "{version:{timestamp:\"$(date +%s)\"}}")"
