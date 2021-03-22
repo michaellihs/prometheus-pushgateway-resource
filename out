@@ -77,9 +77,12 @@ EOF
 else
     echo "Metric sent to Pushgateway: '${body}'" >&2
     echo "${body}" | curl $(insecure) $(basicauth) --data-binary @- "${pushgw_url}/metrics/job/${job}"
+    return_code=$?
 fi
 
 timestamp="$(jq -n "{version:{timestamp:\"$(date +%s)\"}}")"
 
 # send actual result to &3 since this is redirected to &1
 echo "$timestamp $debug_info " | jq -s add  >&3
+
+exit ${return_code:-0}
