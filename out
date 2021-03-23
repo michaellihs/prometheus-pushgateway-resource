@@ -19,6 +19,9 @@ cat > "${payload}" <&0
 debug="$(jq -r '.source.debug // "false"' < "${payload}")"
 
 pushgw_url="$(jq -r '.source.url' < "${payload}")"
+basicauth_username="$(jq -r '.source.basicauth.username // empty' < "${payload}")"
+basicauth_password="$(jq -r '.source.basicauth.password // empty' < "${payload}")"
+skip_ssl_validation="$(jq -r '.source.skip_ssl_validation' < "${payload}")"
 job_from_source="$(jq -r '.source.job' < "${payload}")"
 job_from_params="$(jq -r '.params.job' < "${payload}")"
 metric="$(jq -r '.params.metric' < "${payload}")"
@@ -28,6 +31,7 @@ labels="$(jq -r '.params.labels' < "${payload}")"
 # if we have a job in the parameters, override job in source
 job=""
 if [[ $job_from_params == 'null' ]]; then job=$job_from_source; else job=$job_from_params; fi
+job=$(echo ${job} | envsubst)
 
 # if we have a set of lables, flatten them into comma-separated string
 if [[ ${labels} != 'null' ]]; then
@@ -37,25 +41,57 @@ fi
 
 body="${metric} ${value}"
 body=$(echo ${body} | envsubst)
+body_escaped=${body//\"/\\\"}
 
 debug_info=""
+
+insecure() {
+    [ "${skip_ssl_validation:-false}" == "true" ] && echo -n "--insecure"
+}
+insecure_enabled() {
+    [ "${skip_ssl_validation:-false}" == "true" ] && echo -n '"skip_ssl_validation": "true",'
+}
+
+basicauth() {
+    if [ -n "$basicauth_username" ]; then
+        echo -n "--user ${basicauth_username}:${basicauth_password}"
+    fi
+}
+basicauth_enabled() {
+    if [ -n "$basicauth_username" ]; then
+        echo -n '"basicauth": "enabled",'
+    fi
+}
 
 # check whether we really want to send messages or just running tests (debug)
 if [[ "${debug}" == "true" ]]; then
     debug_info="$(cat <<EOF
 {
     "pushgw_url": "${pushgw_url}",
-    "body": "${body//\"/\\\"}",
+    $(basicauth_enabled)
+    $(insecure_enabled)
+    "body": "${body_escaped}",
     "job": "${job}"
 }
 EOF
     )"
+    echo "$debug_info"
 else
-    echo "Metric sent to Pushgateway: '${body}'" >&2
-    echo "${body}" | curl --data-binary @- "${pushgw_url}/metrics/job/${job}"
+    echo "Sending metric: '${body}'" >&2
+    echo "To Pushgateway: ${pushgw_url}/metrics/job/${job}" >&2
+    echo "With arguments: $(insecure) $(basicauth | sed -e 's#:.*#:redacted#')" >&2
+    echo "${body}" | curl $(insecure) $(basicauth) --fail --data-binary @- "${pushgw_url}/metrics/job/${job}" 2>&1
+    return_code=$?
+    if [ $return_code -eq 0 ]; then
+        echo "Success: metric pushed"
+    else
+        echo "Error: could not push to pushgateway ($return_code)"
+    fi
 fi
 
 timestamp="$(jq -n "{version:{timestamp:\"$(date +%s)\"}}")"
 
 # send actual result to &3 since this is redirected to &1
 echo "$timestamp $debug_info " | jq -s add  >&3
+
+exit ${return_code:-0}

@@ -46,6 +46,18 @@ export BUILD_TEAM_NAME='main'
 export ATC_EXTERNAL_URL='http://concourse.local'
 
 # run test cases
+test 'basicauth' | jq -e "
+    .pushgw_url == $(echo 'http://pushgw:9091' | jq -R .) and
+    .basicauth == $(echo 'enabled' | jq -R .) and
+    .body == $(echo 'simple_metric 0' | jq -R .) and
+    .job == $(echo 'simple_metric' | jq -R .)"
+
+test 'skip_ssl_validation' | jq -e "
+    .pushgw_url == $(echo 'https://pushgw:9091' | jq -R .) and
+    .skip_ssl_validation == $(echo 'true' | jq -R .) and
+    .body == $(echo 'simple_metric 0' | jq -R .) and
+    .job == $(echo 'simple_metric' | jq -R .)"
+
 test 'simple_metric' | jq -e "
     .pushgw_url == $(echo 'http://pushgw:9091' | jq -R .) and
     .body == $(echo 'simple_metric 0' | jq -R .) and

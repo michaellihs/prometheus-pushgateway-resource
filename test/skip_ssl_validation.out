@@ -1,0 +1,12 @@
+{
+  "source": {
+    "url": "https://pushgw:9091",
+    "skip_ssl_validation": "true",
+    "job": "simple_metric",
+    "debug": "true"
+  },
+  "params": {
+    "metric": "simple_metric",
+    "value": 0
+  }
+}

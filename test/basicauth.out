@@ -1,0 +1,15 @@
+{
+  "source": {
+    "url": "http://pushgw:9091",
+    "basicauth": {
+      "username": "user",
+      "password": "pass"
+    },
+    "job": "simple_metric",
+    "debug": "true"
+  },
+  "params": {
+    "metric": "simple_metric",
+    "value": 0
+  }
+}

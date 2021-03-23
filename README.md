@@ -46,8 +46,12 @@ resources:
   - name: pushgateway
     type: pushgateway
     source:
-      url: http://pushgw:9091
+      url: https://pushgw:9091
+      skip_ssl_validation: true
       job: concourse-pushgw-development
+      basicauth:
+        username: admin
+        password: changeme
 
 jobs:
   - name: pushgw-metric
@@ -116,20 +120,22 @@ jobs:
 | Parameter | Type   | Required | Default | Description                                                                                        |
 |:----------|:-------|:---------|:--------|:---------------------------------------------------------------------------------------------------|
 | `url`     | URL    | yes      |         | URL of the Pushgateway server to send metrics to                                                   |
+| `skip_ssl_validation`| String | no      | `false` | Skip SSL validation for https connections                                                |
 | `debug`   | String | no       | `false` | If set to `true`, the resource will output only debug information                                  |
 | `job`     | String | no       |         | Job name of the metrics ( `metric{job="THIS VALUE",...}`), overridden by value in `params` section |
-
+| `basicauth.username` | String | no      |         | Username for basic authentication                                                        |
+| `basicauth.password` | String | no      |         | Password for basic authentication                                                        |
 
 #### The `jobs.plan.task.on_success|on_failure.params` section
 
 | Parameter | Type   | Required | Default | Description                                                                                       |
 |:----------|:-------|:---------|:--------|:--------------------------------------------------------------------------------------------------|
 | `metric`  | String | yes      |         | The metric to send to the Pushgateway                                                             |
-| `value`   | Float  | yes      |         | Value for the metric                                                                                |
+| `value`   | Float  | yes      |         | Value for the metric                                                                              |
 | `job`     | String | no       |         | Job name of the metrics ( `metric{job="THIS VALUE",...}`) - overrides value in `resource` section |
 | `labels`  | Map    | no       |         | Labels and values to be added as `metric{key="value"...}`                                         |
 
-The following environment variables can be used in the `metric` and `labels` properties:
+The following environment variables can be used in the `job`, `metric` and `labels` properties:
 
 * `$BUILD_ID`
 * `$BUILD_PIPELINE_NAME`
@@ -224,9 +230,9 @@ The tests are also part of the `Dockerfile` and will run with every build of the
 ### Building and pushing the Docker Image for the Resource
 
 ```bash
-./build.sh VERSION REPOSITORY
+./build.sh VERSION REPOSITORY [--latest]
 ```
-
+`--latest` is optional and will also update the `latest` tag on the image.
 
 ### Setting up the CI Pipeline for the Resource
 
